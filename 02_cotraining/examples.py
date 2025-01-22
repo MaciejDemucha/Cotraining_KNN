@@ -18,12 +18,16 @@ if __name__ == '__main__':
     load_breast_cancer(return_X_y=True),
     load_iris(return_X_y=True)]
 
+	neighbors = 7
+	p_metric = np.inf
+	knn1 = KNeighborsClassifier(n_neighbors=neighbors, p=p_metric)
+	knn2 = KNeighborsClassifier()
 
 	CLASSIFIERS = [
 		KNeighborsClassifier(n_neighbors=3),
-		KNeighborsClassifier(n_neighbors=15),
-		CoTrainingClassifier(LogisticRegression()),
-		CustomCotrainingClassifier(LogisticRegression(), LogisticRegression(), p=1, n=3, k=30, u=75),
+		KNeighborsClassifier(n_neighbors=5),
+		CoTrainingClassifier(knn1,knn2),
+		CustomCotrainingClassifier(knn1, knn2, p=1, n=3, k=30, u=75),
 		SelfTrainingClassifier(SVC(probability=True, gamma="auto"))]
 
 	rng = np.random.RandomState(42)
@@ -81,5 +85,5 @@ if __name__ == '__main__':
 				score = accuracy_score(y[test], y_pred)
 				scores[dataset_idx, classifier_idx, fold_idx] = score
 			
-	np.save("scores", scores)
+	np.save(f"scores_n{neighbors}_p{p_metric}", scores)
 	

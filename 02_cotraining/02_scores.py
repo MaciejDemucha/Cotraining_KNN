@@ -8,7 +8,7 @@ scores = np.load("scores.npy")
 # tablefmt="latex"
 table = tabulate(np.mean(scores, axis=-1), 
                  tablefmt="grid", 
-                 headers=["KNN 3", "KNN 15", "cotrain logistic", "selftrain svc"], 
+                 headers=["KNN 3", "KNN 15", "cotrain logistic","custom_cotrain", "selftrain svc"], 
                  showindex=["wisconsin", "iris"]
 )
 
@@ -16,7 +16,7 @@ print(table)
 
 table = tabulate(np.std(scores, axis=-1), 
                  tablefmt="grid", 
-                 headers=["KNN 3", "KNN 15", "cotrain logistic", "selftrain svc"], 
+                 headers=["KNN 3", "KNN 15", "cotrain logistic","custom_cotrain", "selftrain svc"], 
                  showindex=["wisconsin", "iris"]
 )
 

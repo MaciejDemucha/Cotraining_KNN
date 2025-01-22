@@ -99,11 +99,11 @@ class CoTrainingClassifier(BaseEstimator, ClassifierMixin):
 		while it != self.k and U:
 			it += 1
 
-			self.clf1_.fit(X1[L], y[L])
-			self.clf2_.fit(X2[L], y[L])
+			self.clf1.fit(X1[L], y[L])
+			self.clf2.fit(X2[L], y[L])
 
-			y1_prob = self.clf1_.predict_proba(X1[U_])
-			y2_prob = self.clf2_.predict_proba(X2[U_])
+			y1_prob = self.clf1.predict_proba(X1[U_])
+			y2_prob = self.clf2.predict_proba(X2[U_])
 
 			n, p = [], []
 

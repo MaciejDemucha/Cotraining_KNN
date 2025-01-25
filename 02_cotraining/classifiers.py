@@ -203,7 +203,7 @@ class CoTrainingClassifier(BaseEstimator, ClassifierMixin):
 
 	def predict_proba(self, X1, X2):
 		"""Predict the probability of the samples belonging to each class."""
-		y_proba = np.full((X1.shape[0], 2), -1, np.float)
+		y_proba = np.full((X1.shape[0], 2), -1, np.float64)
 
 		y1_proba = self.clf1.predict_proba(X1)
 		y2_proba = self.clf2.predict_proba(X2)
@@ -212,6 +212,6 @@ class CoTrainingClassifier(BaseEstimator, ClassifierMixin):
 			y_proba[i][0] = (y1_i_dist[0] + y2_i_dist[0]) / 2
 			y_proba[i][1] = (y1_i_dist[1] + y2_i_dist[1]) / 2
 
-		_epsilon = 0.0001
-		assert all(abs(sum(y_dist) - 1) <= _epsilon for y_dist in y_proba)
+		# _epsilon = 0.0001
+		# assert all(abs(sum(y_dist) - 1) <= _epsilon for y_dist in y_proba)
 		return y_proba

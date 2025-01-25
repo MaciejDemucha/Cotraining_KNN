@@ -32,7 +32,7 @@ class CustomCotrainingClassifier(BaseEstimator, ClassifierMixin):
         self.k = k
         self.u = u
 
-    def fit(self, X1, X2, y):
+    def fit(self, X1, X2, y, threshold=0.5):
         labeled_mask = y != -1
         unlabeled_mask = ~labeled_mask
         y_unlabeled = y[unlabeled_mask]
@@ -63,17 +63,17 @@ class CustomCotrainingClassifier(BaseEstimator, ClassifierMixin):
             n, p = [], []
 
             for i in (y1_prob[:,0].argsort())[-self.n:]:
-                #if y1_prob[i,0] > 0.5:
+                if y1_prob[i,0] > threshold:
                     n.append(i)
             for i in (y1_prob[:,1].argsort())[-self.p:]:
-                #if y1_prob[i,1] > 0.5:
+                if y1_prob[i,1] > threshold:
                     p.append(i)
 
             for i in (y2_prob[:,0].argsort())[-self.n:]:
-                #if y2_prob[i,0] > 0.5:
+                if y2_prob[i,0] > threshold:
                     n.append(i)
             for i in (y2_prob[:,1].argsort())[-self.p:]:
-                #if y2_prob[i,1] > 0.5:
+                if y2_prob[i,1] > threshold:
                     p.append(i)
 
             y[[U_prim[x] for x in p]] = 1

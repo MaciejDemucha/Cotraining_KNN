@@ -2,22 +2,24 @@ import numpy as np
 from tabulate import tabulate
 
 from scipy.stats import ttest_rel
- 
-scores = np.load("scores_n3_pinf.npy")
 
-# tablefmt="latex"
-table = tabulate(np.mean(scores, axis=-1), 
-                 tablefmt="grid", 
-                 headers=["KNN 3", "KNN 5", "cotrain knn","custom_cotrain knn", "selftrain svc"], 
-                 showindex=["wisconsin", "iris"]
+scores = np.load("scores_n5_p2_%03_t09.npy")
+
+table = tabulate(
+    np.mean(scores, axis=-1),
+    tablefmt="latex_booktabs",
+    floatfmt=".4f",
+    headers=["KNN 3", "KNN 5", "cotrain knn", "custom_cotrain knn", "selftrain svc"],
+    showindex=["wisconsin", "iris"],
 )
 
 print(table)
-
-table = tabulate(np.std(scores, axis=-1), 
-                 tablefmt="grid", 
-                 headers=["KNN 3", "KNN 5", "cotrain knn","custom_cotrain knn", "selftrain svc"], 
-                 showindex=["wisconsin", "iris"]
+table = tabulate(
+    np.std(scores, axis=-1),
+    tablefmt="latex_booktabs",
+    floatfmt=".4f",
+    headers=["KNN 3", "KNN 5", "cotrain knn", "custom_cotrain knn", "selftrain svc"],
+    showindex=["wisconsin", "iris"],
 )
 
 print(table)
@@ -30,6 +32,6 @@ for i in range(scores.shape[0]):
         for k in range(scores.shape[1]):
             t, p = ttest_rel(scores[i, j, :], scores[i, k, :])
             stat_mat[j, k] = p < 0.05
-    
+
     table = tabulate(stat_mat)
     print(table)

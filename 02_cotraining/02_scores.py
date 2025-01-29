@@ -3,11 +3,12 @@ from tabulate import tabulate
 
 from scipy.stats import ttest_rel
  
-scores = np.load("scores_n3_pinf.npy")
+scores = np.load("scores_n7_pinf.npy")
 
-# tablefmt="latex"
+tablefmt="latex"
 table = tabulate(np.mean(scores, axis=-1), 
-                 tablefmt="grid", 
+                  tablefmt="latex_booktabs",
+                  floatfmt=".4f",
                  headers=["KNN 3", "KNN 5", "cotrain knn","custom_cotrain knn", "selftrain svc"], 
                  showindex=["wisconsin", "iris"]
 )
@@ -15,7 +16,8 @@ table = tabulate(np.mean(scores, axis=-1),
 print(table)
 
 table = tabulate(np.std(scores, axis=-1), 
-                 tablefmt="grid", 
+                  tablefmt="latex_booktabs",
+                  floatfmt=".4f",
                  headers=["KNN 3", "KNN 5", "cotrain knn","custom_cotrain knn", "selftrain svc"], 
                  showindex=["wisconsin", "iris"]
 )

@@ -11,12 +11,19 @@ from sklearn.base import clone
 from sklearn.datasets import load_iris, load_breast_cancer
 from sklearn.semi_supervised import SelfTrainingClassifier
 from sklearn.model_selection import RepeatedStratifiedKFold
-
+from scipy.io import arff
+import pandas as pd
+import os
 
 if __name__ == '__main__':
 	DATASETS = [
     load_breast_cancer(return_X_y=True),
     load_iris(return_X_y=True)]
+
+	CUSTOM_DATASETS_FILES = [
+		"diabetes.arff",
+		"blood.arff"
+	]
 
 	neighbors = 7
 	p_metric = np.inf
@@ -52,11 +59,53 @@ if __name__ == '__main__':
 
 	scores = np.zeros(shape=(len(DATASETS), len(CLASSIFIERS), rskf.get_n_splits()))
 
-	for dataset_idx, (X, y) in enumerate(DATASETS):
+	#for dataset_idx, (X, y) in enumerate(DATASETS):
+	# 	rng = np.random.RandomState(42)
+
+	# 	feature_names = dataset.feature_names if hasattr(dataset, "feature_names") else None
+	# 	target_names = dataset.target_names if hasattr(dataset, "target_names") else None
+
+	# 	# Create random unlabeled points
+	# 	random_unlabeled_points = rng.rand(y.shape[0]) < 0.3
+	# 	y[random_unlabeled_points] = -1
+
+	# 	mask_labeled = y != -1
+
+	# 	N_SAMPLES, N_FEATURES = X.shape
+
+	# 	for classifier_idx, clf_prot in enumerate(CLASSIFIERS):
+	# 		for fold_idx, (train, test) in enumerate(rskf.split(X, y)):
+	# 			clf = clone(clf_prot)
+	# 			X_test = X[test]
+	# 			X_train = X[train]
+
+	# 			X1_train = X_train[:,:N_FEATURES // 2]
+	# 			X2_train = X_train[:, N_FEATURES // 2:]
+	# 			X1_test = X_test[:,:N_FEATURES // 2]
+	# 			X2_test = X_test[:, N_FEATURES // 2:]
+	# 			if isinstance(clf, CoTrainingClassifier) | isinstance(clf, CustomCotrainingClassifier):
+	# 				clf.fit(X1_train, X2_train, y[train])
+	# 				y_pred = clf.predict(X1_test, X2_test)
+	# 			else:
+	# 				clf.fit(X[train], y[train])
+	# 				y_pred = clf.predict(X[test])
+	# 			score = accuracy_score(y[test], y_pred)
+	# 			scores[dataset_idx, classifier_idx, fold_idx] = score
+			
+	# np.save(f"scores_n{neighbors}_p{p_metric}", scores)
+
+	for dataset_idx, file in enumerate(CUSTOM_DATASETS_FILES):
 		rng = np.random.RandomState(42)
 
-		feature_names = dataset.feature_names if hasattr(dataset, "feature_names") else None
-		target_names = dataset.target_names if hasattr(dataset, "target_names") else None
+		data, meta = arff.loadarff(file)
+		df = pd.DataFrame(data)
+		# If any columns are of type 'object' (byte strings), convert them to strings
+		for col in df.select_dtypes([object]).columns:
+			df[col] = df[col].str.decode('utf-8')  # Convert bytes to string
+			df[col] = pd.to_numeric(df[col], errors='ignore')  # Convert to int/float if possible
+
+		X = df.iloc[:, :-1].to_numpy()
+		y = df.iloc[:, -1].to_numpy()
 
 		# Create random unlabeled points
 		random_unlabeled_points = rng.rand(y.shape[0]) < 0.3

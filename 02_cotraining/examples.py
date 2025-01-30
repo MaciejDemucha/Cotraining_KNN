@@ -29,6 +29,40 @@ from scipy.io import arff
 # 		y = df.iloc[:, -1].to_numpy()
 
 
+def arff_to_sklearn(arff_file):
+    """
+    Converts an ARFF file to a Pandas DataFrame for use with sklearn.
+    
+    Parameters:
+        arff_file (str): Path to the .arff file.
+    
+    Returns:
+        X (numpy.ndarray): Feature matrix.
+        y (numpy.ndarray): Target array (if available), otherwise None.
+        feature_names (list): Names of the features.
+        target_name (str or None): Name of the target column (if available).
+    """
+    data, meta = arff.loadarff(arff_file)
+    df = pd.DataFrame(data)
+    
+    # Convert byte strings to regular strings for categorical attributes
+    for col in df.select_dtypes([object]):
+        df[col] = df[col].str.decode('utf-8')
+    
+    # Identify the target column (assuming the last column is the target)
+    feature_names = list(df.columns[:-1])
+    target_name = df.columns[-1] if df.shape[1] > 1 else None
+    
+    # Extract features and target
+    X = df.iloc[:, :-1].values if df.shape[1] > 1 else df.values
+    y = df.iloc[:, -1].values if df.shape[1] > 1 else None
+    
+    return X, y
+
+# Example usage:
+# X, y, feature_names, target_name = arff_to_sklearn('your_file.arff')
+
+
 def ucz_sie_maszynowo_i_zapisz_wyniki(
     DATASETS, DATA_LABEL_PERCENT, THRESHOLD, neighbors, p_metric, CLASSIFIERS, dataset
 ):
@@ -36,17 +70,35 @@ def ucz_sie_maszynowo_i_zapisz_wyniki(
 
     scores = np.zeros(shape=(len(DATASETS), len(CLASSIFIERS), rskf.get_n_splits()))
 
-    for dataset_idx, (X, y) in enumerate(DATASETS):
+    # for dataset_idx, (X, y) in enumerate(DATASETS):
+    #     rng = np.random.RandomState(42)
+
+    #     feature_names = (
+    #         dataset.feature_names if hasattr(dataset, "feature_names") else None
+    #     )
+    #     target_names = (
+    #         dataset.target_names if hasattr(dataset, "target_names") else None
+    #     )
+
+    #     # Create random unlabeled points
+    #     random_unlabeled_points = rng.rand(y.shape[0]) < DATA_LABEL_PERCENT
+    #     y[random_unlabeled_points] = -1
+
+    #     mask_labeled = y != -1
+
+    #     N_SAMPLES, N_FEATURES = X.shape
+    for dataset_idx, file in enumerate(CUSTOM_DATASETS_FILES):
         rng = np.random.RandomState(42)
 
-        feature_names = (
-            dataset.feature_names if hasattr(dataset, "feature_names") else None
-        )
-        target_names = (
-            dataset.target_names if hasattr(dataset, "target_names") else None
-        )
+        data, meta = arff.loadarff(file)
+        df = pd.DataFrame(data)
+        # If any columns are of type 'object' (byte strings), convert them to strings
+        for col in df.select_dtypes([object]).columns:
+            df[col] = df[col].str.decode('utf-8')  # Convert bytes to string
+            df[col] = pd.to_numeric(df[col], errors='ignore')  # Convert to int/float if possible
 
-        # Create random unlabeled points
+        X = df.iloc[:, :-1].to_numpy()
+        y = df.iloc[:, -1].to_numpy()
         random_unlabeled_points = rng.rand(y.shape[0]) < DATA_LABEL_PERCENT
         y[random_unlabeled_points] = -1
 
@@ -87,7 +139,7 @@ if __name__ == "__main__":
     
     CUSTOM_DATASETS_FILES = [
 		"diabetes.arff",
-		"blood.arff"
+		#"blood.arff"
 	]
 
     DATA_LABEL_PERCENT = 0.3

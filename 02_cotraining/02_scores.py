@@ -15,7 +15,8 @@ for file in os.listdir():
             tablefmt="latex_booktabs",
             floatfmt=".4f",
             headers=["KNN 3", "KNN 5", "cotrain knn", "custom_cotrain knn", "selftrain svc"],
-            showindex=["wisconsin", "iris"],
+            #showindex=["wisconsin", "iris", "diabetes"],
+            showindex=["diabetes"],
         )
         print('')
         print(table)
@@ -25,7 +26,8 @@ for file in os.listdir():
             tablefmt="latex_booktabs",
             floatfmt=".4f",
             headers=["KNN 3", "KNN 5", "cotrain knn", "custom_cotrain knn", "selftrain svc"],
-            showindex=["wisconsin", "iris"],
+            #showindex=["wisconsin", "iris", "diabetes"],
+            showindex=["diabetes"],
         )
 
         print('\n')

@@ -14,7 +14,7 @@ from sklearn.semi_supervised import SelfTrainingClassifier
 from sklearn.model_selection import RepeatedStratifiedKFold
 from scipy.io import arff
 
-#to trzeba zastosować w tych z arff
+# to trzeba zastosować w tych z arff
 # for dataset_idx, file in enumerate(CUSTOM_DATASETS_FILES):
 # 		rng = np.random.RandomState(42)
 
@@ -32,10 +32,10 @@ from scipy.io import arff
 def arff_to_sklearn(arff_file):
     """
     Converts an ARFF file to a Pandas DataFrame for use with sklearn.
-    
+
     Parameters:
         arff_file (str): Path to the .arff file.
-    
+
     Returns:
         X (numpy.ndarray): Feature matrix.
         y (numpy.ndarray): Target array (if available), otherwise None.
@@ -44,67 +44,63 @@ def arff_to_sklearn(arff_file):
     """
     data, meta = arff.loadarff(arff_file)
     df = pd.DataFrame(data)
-    
+
     # Convert byte strings to regular strings for categorical attributes
     for col in df.select_dtypes([object]):
-        df[col] = df[col].str.decode('utf-8')
-    
+        df[col] = df[col].str.decode("utf-8")
+        df[col] = pd.to_numeric(df[col], errors="ignore")
+
     # Identify the target column (assuming the last column is the target)
     feature_names = list(df.columns[:-1])
     target_name = df.columns[-1] if df.shape[1] > 1 else None
-    
+
     # Extract features and target
     X = df.iloc[:, :-1].values if df.shape[1] > 1 else df.values
     y = df.iloc[:, -1].values if df.shape[1] > 1 else None
-    
+
     return X, y
+
 
 # Example usage:
 # X, y, feature_names, target_name = arff_to_sklearn('your_file.arff')
 
 
 def ucz_sie_maszynowo_i_zapisz_wyniki(
-    DATASETS, DATA_LABEL_PERCENT, THRESHOLD, neighbors, p_metric, CLASSIFIERS, dataset
+    DATASETS, DATA_LABEL_PERCENT, THRESHOLD, neighbors, p_metric, CLASSIFIERS
 ):
     rskf = RepeatedStratifiedKFold(n_repeats=5, n_splits=2, random_state=100)
 
     scores = np.zeros(shape=(len(DATASETS), len(CLASSIFIERS), rskf.get_n_splits()))
 
-    # for dataset_idx, (X, y) in enumerate(DATASETS):
-    #     rng = np.random.RandomState(42)
-
-    #     feature_names = (
-    #         dataset.feature_names if hasattr(dataset, "feature_names") else None
-    #     )
-    #     target_names = (
-    #         dataset.target_names if hasattr(dataset, "target_names") else None
-    #     )
-
-    #     # Create random unlabeled points
-    #     random_unlabeled_points = rng.rand(y.shape[0]) < DATA_LABEL_PERCENT
-    #     y[random_unlabeled_points] = -1
-
-    #     mask_labeled = y != -1
-
-    #     N_SAMPLES, N_FEATURES = X.shape
-    for dataset_idx, file in enumerate(CUSTOM_DATASETS_FILES):
+    for dataset_idx, (X, y) in enumerate(DATASETS):
+        print(type(X[0][0]), type(y[0]))
         rng = np.random.RandomState(42)
 
-        data, meta = arff.loadarff(file)
-        df = pd.DataFrame(data)
-        # If any columns are of type 'object' (byte strings), convert them to strings
-        for col in df.select_dtypes([object]).columns:
-            df[col] = df[col].str.decode('utf-8')  # Convert bytes to string
-            df[col] = pd.to_numeric(df[col], errors='ignore')  # Convert to int/float if possible
-
-        X = df.iloc[:, :-1].to_numpy()
-        y = df.iloc[:, -1].to_numpy()
+        # Create random unlabeled points
         random_unlabeled_points = rng.rand(y.shape[0]) < DATA_LABEL_PERCENT
         y[random_unlabeled_points] = -1
 
         mask_labeled = y != -1
 
         N_SAMPLES, N_FEATURES = X.shape
+        # for dataset_idx, file in enumerate(DATASETS):
+        #     rng = np.random.RandomState(42)
+
+        #     data, meta = arff.loadarff(file)
+        #     df = pd.DataFrame(data)
+        #     # If any columns are of type 'object' (byte strings), convert them to strings
+        #     for col in df.select_dtypes([object]).columns:
+        #         df[col] = df[col].str.decode('utf-8')  # Convert bytes to string
+        #         df[col] = pd.to_numeric(df[col], errors='ignore')  # Convert to int/float if possible
+
+        #     X = df.iloc[:, :-1].to_numpy()
+        #     y = df.iloc[:, -1].to_numpy()
+        #     random_unlabeled_points = rng.rand(y.shape[0]) < DATA_LABEL_PERCENT
+        #     y[random_unlabeled_points] = -1
+
+        #     mask_labeled = y != -1
+
+        #     N_SAMPLES, N_FEATURES = X.shape
 
         for classifier_idx, clf_prot in enumerate(CLASSIFIERS):
             for fold_idx, (train, test) in enumerate(rskf.split(X, y)):
@@ -135,12 +131,16 @@ def ucz_sie_maszynowo_i_zapisz_wyniki(
 
 
 if __name__ == "__main__":
-    DATASETS = [load_breast_cancer(return_X_y=True), load_iris(return_X_y=True)]
-    
+    DATASETS = [
+        load_breast_cancer(return_X_y=True),
+        load_iris(return_X_y=True),
+        arff_to_sklearn("diabetes.arff"),
+    ]
+
     CUSTOM_DATASETS_FILES = [
-		"diabetes.arff",
-		#"blood.arff"
-	]
+        "diabetes.arff",
+        # "blood.arff"
+    ]
 
     DATA_LABEL_PERCENT = 0.3
     THRESHOLD = 0.9
@@ -177,22 +177,20 @@ if __name__ == "__main__":
 
     for label_percent in [0.1, 0.2, 0.3]:
         ucz_sie_maszynowo_i_zapisz_wyniki(
-            DATASETS,
-            label_percent,
-            THRESHOLD,
-            NEIGHBORS,
-            P_METRIC,
-            CLASSIFIERS,
-            dataset,
+            DATASETS, label_percent, THRESHOLD, NEIGHBORS, P_METRIC, CLASSIFIERS
         )
 
     for threshold in [0.7, 0.8, 0.9]:
         ucz_sie_maszynowo_i_zapisz_wyniki(
-            DATASETS,
-            DATA_LABEL_PERCENT,
-            threshold,
-            NEIGHBORS,
-            P_METRIC,
-            CLASSIFIERS,
-            dataset,
+            DATASETS, DATA_LABEL_PERCENT, threshold, NEIGHBORS, P_METRIC, CLASSIFIERS
+        )
+
+    for p_value in [1, 2, np.inf]:
+        ucz_sie_maszynowo_i_zapisz_wyniki(
+            DATASETS, DATA_LABEL_PERCENT, THRESHOLD, NEIGHBORS, p_value, CLASSIFIERS
+        )
+
+    for n_value in [3, 5, 7]:
+        ucz_sie_maszynowo_i_zapisz_wyniki(
+            DATASETS, DATA_LABEL_PERCENT, THRESHOLD, n_value, P_METRIC, CLASSIFIERS
         )
